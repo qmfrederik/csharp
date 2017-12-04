@@ -10,10 +10,4 @@
     <ProjectReference Include="..\..\src\KubernetesClient.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="kube-config.yml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
