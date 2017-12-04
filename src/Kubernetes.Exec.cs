@@ -10,8 +10,14 @@ namespace k8s
 {
     public partial class Kubernetes
     {
+        /// <summary>
+        /// Gets a function which returns a <see cref="WebSocketBuilder"/> which <see cref="Kubernetes"/> will use to
+        /// create a new <see cref="WebSocket"/> connection to the Kubernetes cluster.
+        /// </summary>
+        public Func<WebSocketBuilder> CreateWebSocketBuilder { get; set; } = () => new WebSocketBuilder();
+
         /// <inheritdoc/>
-        public async Task<ClientWebSocket> WebSocketNamespacedPodExecWithHttpMessagesAsync(string name, string @namespace = "default", string command = "/bin/sh", string container = null, bool stderr = true, bool stdin = true, bool stdout = true, bool tty = true, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<WebSocket> WebSocketNamespacedPodExecWithHttpMessagesAsync(string name, string @namespace = "default", string command = "/bin/sh", string container = null, bool stderr = true, bool stdin = true, bool stdout = true, bool tty = true, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (name == null)
             {
@@ -73,23 +79,22 @@ namespace k8s
 
             uriBuilder.Query = string.Join("&", _queryParameters);
 
-
             // Create WebSocket transport objects
-            ClientWebSocket webSocket = new ClientWebSocket();
+            WebSocketBuilder webSocketBuilder = this.CreateWebSocketBuilder();
 
             // Set Headers
             if (customHeaders != null)
             {
                 foreach (var _header in customHeaders)
                 {
-                    webSocket.Options.SetRequestHeader(_header.Key, string.Join(" ", _header.Value));
+                    webSocketBuilder.SetRequestHeader(_header.Key, string.Join(" ", _header.Value));
                 }
             }
 
             // Set Credentials
             foreach (var cert in this.HttpClientHandler.ClientCertificates)
             {
-                webSocket.Options.ClientCertificates.Add(cert);
+                webSocketBuilder.AddClientCertificate(cert);
             }
 
             HttpRequestMessage message = new HttpRequestMessage();
@@ -97,15 +102,17 @@ namespace k8s
 
             foreach (var _header in message.Headers)
             {
-                webSocket.Options.SetRequestHeader(_header.Key, string.Join(" ", _header.Value));
+                webSocketBuilder.SetRequestHeader(_header.Key, string.Join(" ", _header.Value));
             }
 
             // Send Request
             cancellationToken.ThrowIfCancellationRequested();
 
+            WebSocket webSocket = null;
+
             try
             {
-                await webSocket.ConnectAsync(uriBuilder.Uri, CancellationToken.None).ConfigureAwait(false);
+                webSocket = await webSocketBuilder.BuildAndConnectAsync(uriBuilder.Uri, CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
