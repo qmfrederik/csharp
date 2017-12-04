@@ -11,8 +11,8 @@ namespace exec
             var pod = args[0];
             var container = args.Length > 1 ? args[1] : null;
 
-            var k8sClientConfig = KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigPath: "kube-config.yml");
-            var client = new Kubernetes(k8sClientConfig);
+            var k8SClientConfig = KubernetesClientConfiguration.BuildConfigFromConfigFile();
+            var client = new Kubernetes(k8SClientConfig);
 
             var webSocket = await client.WebSocketNamespacedPodExecWithHttpMessagesAsync(pod, container: container, command: "/bin/bash").ConfigureAwait(false);
 
