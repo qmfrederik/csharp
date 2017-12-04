@@ -29,6 +29,11 @@ namespace k8s
         public event EventHandler<string> StandardOutputReceived;
         public event EventHandler<string> StandardErrorReceived;
 
+        public bool Running
+        {
+            get { return this.runLoop != null && this.runLoop.Status == TaskStatus.Running; }
+        }
+
         public void Start()
         {
             if (this.runLoop == null)
