@@ -9,6 +9,10 @@ namespace k8s
 {
     public class ExecClient : IDisposable
     {
+        private const int StdInStreamIndex = 0;
+        private const int StdOutStreamIndex = 1;
+        private const int StdErrStreamIndex = 2;
+
         private readonly ClientWebSocket socket;
         private readonly CancellationTokenSource cts;
         private Task runLoop;
@@ -99,11 +103,11 @@ namespace k8s
 
                 switch (streamType)
                 {
-                    case 1:
+                    case StdOutStreamIndex:
                         this.StandardOutputReceived?.Invoke(this, value);
                         break;
 
-                    case 2:
+                    case StdErrStreamIndex:
                         this.StandardErrorReceived?.Invoke(this, value);
                         break;
                 }
