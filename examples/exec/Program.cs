@@ -1,6 +1,5 @@
 using k8s;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace exec
