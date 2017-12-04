@@ -13,11 +13,11 @@ namespace k8s
         private const int StdOutStreamIndex = 1;
         private const int StdErrStreamIndex = 2;
 
-        private readonly ClientWebSocket socket;
+        private readonly WebSocket socket;
         private readonly CancellationTokenSource cts;
         private Task runLoop;
 
-        public ExecClient(ClientWebSocket socket)
+        public ExecClient(WebSocket socket)
         {
             this.socket = socket ?? throw new ArgumentNullException(nameof(socket));
             this.cts = new CancellationTokenSource();
@@ -52,23 +52,20 @@ namespace k8s
         public async Task Write(string command, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Send:
-            //  - [uint32: stream index = 0 for stdin]
+            //  - [byte: stream index = 0 for stdin]
             //  - [byte[]: command as UTF8 value]
             var commandLength = Encoding.UTF8.GetByteCount(command);
-            var buffer = ArrayPool<byte>.Shared.Rent(commandLength + 4);
+            var buffer = ArrayPool<byte>.Shared.Rent(commandLength + 1);
 
             try
             {
-                // The first 4 bytes represent the stream index. For stdin this is 0
+                // The first byte represent the stream index. For stdin this is 0
                 buffer[0] = 0;
-                buffer[1] = 0;
-                buffer[2] = 0;
-                buffer[3] = 0;
 
-                // Copy the command to the buffer, starting at offset 4
-                Encoding.UTF8.GetBytes(command, 0, command.Length, buffer, 4);
+                // Copy the command to the buffer, starting at offset 1
+                Encoding.UTF8.GetBytes(command, 0, command.Length, buffer, 1);
 
-                ArraySegment<byte> segment = new ArraySegment<byte>(buffer, 0, commandLength + 4);
+                ArraySegment<byte> segment = new ArraySegment<byte>(buffer, 0, commandLength + 1);
                 await this.socket.SendAsync(segment, WebSocketMessageType.Binary, true, cancellationToken).ConfigureAwait(false);
             }
             finally
