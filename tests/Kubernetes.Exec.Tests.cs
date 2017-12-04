@@ -27,6 +27,7 @@ namespace k8s.tests
             };
 
             Kubernetes client = new Kubernetes(credentials);
+            client.BaseUri = new Uri("http://localhost");
 
             MockWebSocketBuilder mockWebSocketBuilder = new MockWebSocketBuilder();
             client.CreateWebSocketBuilder = () => mockWebSocketBuilder;
