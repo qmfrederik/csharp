@@ -12,6 +12,8 @@ namespace k8s
         private const int StdInStreamIndex = 0;
         private const int StdOutStreamIndex = 1;
         private const int StdErrStreamIndex = 2;
+        private const int ErrorChannelIndex = 3;
+        private const int ResizeChannelIndex = 4;
 
         private readonly WebSocket socket;
         private readonly CancellationTokenSource cts;
