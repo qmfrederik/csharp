@@ -36,7 +36,7 @@ namespace KubernetesClient.IntegrationTests
         }
 
         /// <inheritdoc/>
-        public async Task<V1Pod> Create(int jobId, int runnerId, string @namespace, V1Pod template, Dictionary<string, string> env, CancellationToken cancellationToken)
+        public async Task<V1Pod> Create(string @namespace, V1Pod template, Dictionary<string, string> env, CancellationToken cancellationToken)
         {
             if (template.Metadata.Labels == null)
             {
@@ -47,10 +47,6 @@ namespace KubernetesClient.IntegrationTests
             {
                 template.Spec.Containers[0].Env = new List<V1EnvVar>();
             }
-
-            template.Metadata.Labels.Add("testrun", $"{jobId}");
-            template.Metadata.Labels.Add("runner", $"{runnerId}");
-            template.Metadata.Name = $"{template.Metadata.Name}-{jobId}";
 
             foreach (var var in env)
             {
@@ -69,7 +65,7 @@ namespace KubernetesClient.IntegrationTests
                 throw;
             }
 
-            AsyncManualResetEvent mre = new AsyncManualResetEvent();
+            AsyncAutoResetEvent mre = new AsyncAutoResetEvent();
             Exception error = null;
             bool deleting = false;
 
@@ -128,7 +124,7 @@ namespace KubernetesClient.IntegrationTests
                         error = new KubernetesException(failingInitContainers.First().State.Waiting.Message);
 
                         // Trigger the deletion of this pod. Keep using the watcher to detect the moment at which the pod has been deleted
-                        var task = this.kubernetes.DeleteNamespacedPodAsync(new V1DeleteOptions(), pod.Metadata.Name, pod.Metadata.NamespaceProperty, cancellationToken: cancellationToken);
+                        var task = this.kubernetes.DeleteNamespacedPodAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty, cancellationToken: cancellationToken);
                         deleting = true;
                     }
                 },
@@ -164,7 +160,7 @@ namespace KubernetesClient.IntegrationTests
                 throw new ArgumentNullException(nameof(pod));
             }
 
-            AsyncManualResetEvent mre = new AsyncManualResetEvent();
+            AsyncAutoResetEvent mre = new AsyncAutoResetEvent();
 
             using (var watcher = await this.kubernetes.WatchNamespacedPodAsync(
                 pod.Metadata.Name,
@@ -178,7 +174,7 @@ namespace KubernetesClient.IntegrationTests
                 },
                 cancellationToken: cancellationToken).ConfigureAwait(false))
             {
-                await this.kubernetes.DeleteNamespacedPodAsync(new V1DeleteOptions(), pod.Metadata.Name, pod.Metadata.NamespaceProperty, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await this.kubernetes.DeleteNamespacedPodAsync(pod.Metadata.Name, pod.Metadata.NamespaceProperty, cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 await Task.WhenAny(mre.WaitAsync(cancellationToken), Task.Delay(this.timeout)).ConfigureAwait(false);
             }

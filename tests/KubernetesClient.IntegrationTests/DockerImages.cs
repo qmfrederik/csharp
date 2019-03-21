@@ -10,7 +10,7 @@ namespace KubernetesClient.IntegrationTests
     /// </summary>
     internal static class DockerImages
     {
-        public const string PowerShell = "quamotion/powershell:0.103.70-bionic";
+        public const string PowerShell = "mcr.microsoft.com/powershell:6.1.3-ubuntu-bionic";
         public const string FFmpeg = "jrottenberg/ffmpeg:4.0-ubuntu";
         public const string Nginx = "nginx:1.13";
     }

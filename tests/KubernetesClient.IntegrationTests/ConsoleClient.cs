@@ -15,8 +15,8 @@ namespace KubernetesClient.IntegrationTests
         private readonly Stream stdIn;
         private readonly Stream stdErr;
         private readonly Stream stdOut;
-        private readonly AsyncManualResetEvent stdOutClosed = new AsyncManualResetEvent(false);
-        private readonly AsyncManualResetEvent stdErrClosed = new AsyncManualResetEvent(false);
+        private readonly AsyncAutoResetEvent stdOutClosed = new AsyncAutoResetEvent(false);
+        private readonly AsyncAutoResetEvent stdErrClosed = new AsyncAutoResetEvent(false);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleClient"/> class.
@@ -120,7 +120,7 @@ namespace KubernetesClient.IntegrationTests
         /// <returns>
         /// A <see cref="Task"/> which represents the asynchronous operation.
         /// </returns>
-        protected async Task RunLoop(Stream stream, EventHandler<string> handler, EventHandler<ArraySegment<byte>> binaryHandler, AsyncManualResetEvent onClosed)
+        protected async Task RunLoop(Stream stream, EventHandler<string> handler, EventHandler<ArraySegment<byte>> binaryHandler, AsyncAutoResetEvent onClosed)
         {
             byte[] buffer = new byte[0x100];
             var currentLine = string.Empty;

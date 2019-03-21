@@ -1,6 +1,7 @@
 using k8s;
 using k8s.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using System;
 using System.Collections.Generic;
@@ -154,6 +155,7 @@ namespace KubernetesClient.IntegrationTests
                 command: new string[] { "/bin/cat", path },
                 container: container,
                 tty: false,
+                webSocketSubProtol: WebSocketProtocol.V4BinaryWebsocketProtocol,
                 cancellationToken: commandCancellationToken).ConfigureAwait(false))
             using (StreamDemuxer muxer = new StreamDemuxer(webSocket))
             using (Stream stream = muxer.GetStream(1, 0))
@@ -169,7 +171,7 @@ namespace KubernetesClient.IntegrationTests
                 var error = await errorReader.ReadToEndAsync().ConfigureAwait(false);
 
                 var status = SafeJsonConvert.DeserializeObject<V1Status>(error);
-                var exitCode = KubernetesExtensions.GetExitCodeOrThrow(status);
+                var exitCode = GetExitCodeOrThrow(status);
 
                 if (exitCode != 0)
                 {
