@@ -1,9 +1,12 @@
 #!/bin/sh
+# https://github.com/travis-ci/travis-ci/issues/9361
+sudo apt-get install -y dpkg
+
 echo 'Installing .NET Core...'
 
 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
 sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-trusty-prod trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
 sudo apt-get -qq update
 sudo apt-get install -y dotnet-sdk-2.2
 
@@ -19,8 +22,9 @@ sudo mv minikube /usr/local/bin/
 
 echo 'Creating the minikube cluster'
 sudo minikube start --vm-driver=none --kubernetes-version=v1.13.4 --extra-config=apiserver.authorization-mode=RBAC
+sudo chown -R $USER $HOME/.minikube
+sudo chgrp -R $USER $HOME/.minikube
 minikube update-context
-minikube addons disable dashboard
 
 echo 'Waiting for the cluster nodes to be ready'
 JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'; \
